@@ -90,6 +90,6 @@ delegate?.menuViewController(self, didSelectItemAtIndex: indexPath.row)
 ## 教程项目
 上一篇 MVC 之后，我们已经实现了可以一些功能，比如，点击屏幕可以显示答案，点击正确和错误按钮可以记录正确和错误的个数。
 接下来我们需要实现让用户可以选择问题组的一个列表，并且在 `QuestionViewControlle` 中添加了取消按钮、显示当前问题下标和回答完问题再点击正确或者错误按钮返回的操作。这些操作使用委托模式实现。具体效果如下图：
-![-c375](http://ohg2bgicd.bkt.clouddn.com/2018-08-21 11.26.33.gif)
+![-c375](http://ohg2bgicd.bkt.clouddn.com/delegate.gif)
 ## 预告
 下一章我们会学习策略模式，并且继续完善 RabbleWabble。

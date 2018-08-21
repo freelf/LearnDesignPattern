@@ -1,101 +1,95 @@
-## 介绍 MVC
-MVC 设计模式把对象分为三个不同的类型： Models，Views和 Controllers。
-UML 图表示如下：
-![](http://ohg2bgicd.bkt.clouddn.com/15341242390937.jpg)
-MVC 是在 iOS 编程中是非常常见的，因为 Apple 在 UIKit 中大量选用了这种设计模式。
-* **Models**保持应用数据，通常为 structs 或者简单的 classes。
-* **Views**在屏幕上显示看的见的元素和 controls，通常为`UIView`的子类。
-* **Controllers**在 models 和 views 中间协调，通常为`UIViewController`的子类。
+## 介绍委托模式
+委托模式使一个对象能够使用另一个对象来提供数据或者执行一些任务，这个模式有三个部分，UML 图如下：
+![](http://ohg2bgicd.bkt.clouddn.com/15344108237603.jpg)
+<!-- more -->
+* 一个**对象需要委托**：也就是委托对象。通常这个对象有一个`weak` 属性 `delegate`，防止循环引用。
+* 一个**委托协议**：这个协议定义了委托应该实现或者可能实现的方法。
+* 一个**委托**：实现委托方法的对象。
 
-Controllers 允许对它的 model 和 view 强引用，所以它可以直接操作model 和 view。Controllers 可以有不止一个 model 或者 view。
-相反的，models 和 views 不应该保持他们所属 controller 的强引用。这会导致一个循环引用。
-作为替代，通过属性监听，models 和它们的 controller 进行通信。views 通过`IBAction`和 controller 进行通信。
-这可以让你在几个 controllers 中可以复用 models 和 views。
->注意：Views 可能有一个弱引用 delegate 指向拥有它的 controller。比如，一个 `UITableView`可能持有一个拥有它的 view controller 弱引用作为它的 `delegate` 或者 `dataSource`。然而，table view 不用明确知道这是拥有它的 view controller。
-Controllers 非常难以复用，因为它们的逻辑是非常具体的描述它们所做的任务。因此，MVC 不尝试去复用 Controllers。
-## 什么时候使用 MVC
-一般我们一开始做一个 app 时，我们使用 MVC。
-接下来，我们可能使用除了 MVC 额外的设计模式，但是没关系，在需要时我们再引入更多的设计模式。
+通过依赖一个委托协议代替一个混合对象使得实现更加有弹性，只要一个对象实现了协议就可以作为一个委托对象。
+## 什么时候使用
+使用委托模式可以拆分大型类或者创建通用的、可重用的组件。委托关系在 Apple 的框架中很常见，尤其是 `UIKit`。名字中有 `DataSource` 和 `Delegate` 的对象实际上都遵守了代理模式。
+在 Apple 的框架中为什么不是一个协议，而是两个？
+Apple 的框架通常使用 `DataSource` 来对提供数据的委托方法进行分组，使用 `Delegate` 来对接收数据或者事件的委托方法分组。比如：`UITableViewDataSource` 是想要提供一个 `UITableViewCell` 来展示， `UITableViewDelegate` 通知那行被选中了。
+通常 `dataSource` 和 `delegate` 被设置为一个对象，比如拥有 `UITableView`的 view controller。然而，不是必须这样做。把它设置到另一个对象更有好处。
 ## Playground example
-设计模式可以分为三类
-* 结构类型：描述一个大的子系统如何组合对象。
-* 表现类型：描述对象如何和其他对象联系。
-* 创建类型：创建对象。
-
-很明显，MVC 是一个结构类型的模式。
-接下来，我们看一下如何组合对象，来构成一个地址屏幕 app。
-model：
-```swift
-// MARK: - Address
-public struct Address {
-    public var street: String
-    public var city: String
-    public var state: String
-    public var zipCode: String
-}
-```
-view：
+委托协议是一个表现类型的设计模式。这是因为委托都是一个对象和另一个对象交流有关。
+下面的代码将创建一个`MenuViewController`，这个 VC 有一个 `tableView`，并且是这个 `tableView` 的委托和数据源。
+首先创建 `MenuViewController`：
 
 ```swift
-// MARK: - AddressView
-public final class AddressView: UIView {
-    @IBOutlet public var streetTextField: UITextField!
-    @IBOutlet public var cityTextField: UITextField!
-    @IBOutlet public var stateTextField: UITextField!
-    @IBOutlet public var zipCodeTextField: UITextField!
+import UIKit
+
+class MenuViewController: UIViewController {
+  // 1
+  @IBOutlet var tableView: UITableView! {
+    didSet {
+      tableView.dataSource = self
+      tableView.delegate = self
+    }
+  }
+  // 2
+  let items = ["Item 1", "Item 2", "Item 3"]
 }
 ```
-controller：
+添加下面的代码，设置 `MenuViewController` 为 `tableView` 的数据源和委托：
 
 ```swift
-// MARK: - AddressViewController
-public final class AddressViewController: UIViewController {
-    
-    // MARK: - Properties
-    public var address: Address? {
-        didSet {
-            updateViewFromAddress()
-        }
-    }
-    public var addressView: AddressView! {
-        guard isViewLoaded else { return nil }
-        return view as! AddressView
-    }
-    // MARK: - View Lifecycle
-    public override func viewDidLoad() {
-        super.viewDidLoad()
-        updateViewFromAddress()
-    }
-    
-    private func updateViewFromAddress() {
-        guard let addressView = addressView,
-            let address = address else { return }
-        addressView.streetTextField.text = address.street
-        addressView.cityTextField.text = address.city
-        addressView.stateTextField.text = address.state
-        addressView.zipCodeTextField.text = address.zipCode
-    }
-    // MARK: - Actions
-    @IBAction public func updateAddressFromView(_ sender: AnyObject) {
-        guard let street = addressView.streetTextField.text, street.count > 0,
-            let city = addressView.cityTextField.text, city.count > 0,
-            let state = addressView.stateTextField.text, state.count > 0,
-            let zipCode = addressView.zipCodeTextField.text, zipCode.count > 0
-            else {
-                // TO-DO: show an error message, handle the error, etc
-                return
-        }
-        address = Address(street: street, city: city,
-                          state: state, zipCode: zipCode)
-    }
+// MARK: - UITableViewDataSource
+extension MenuViewController: UITableViewDataSource {
+  
+  func tableView(_ tableView: UITableView,
+                 cellForRowAt indexPath: IndexPath)
+                 -> UITableViewCell {
+    let cell = 
+      tableView.dequeueReusableCell(withIdentifier: "Cell",
+                                    for: indexPath)
+    cell.textLabel?.text = items[indexPath.row]
+    return cell
+  }
+
+  func tableView(_ tableView: UITableView,
+                 numberOfRowsInSection section: Int) -> Int {
+    return items.count
+  }
+}
+
+// MARK: - UITableViewDelegate
+extension MenuViewController: UITableViewDelegate {
+
+  func tableView(_ tableView: UITableView,
+                 didSelectRowAt indexPath: IndexPath) {
+    // To do next....
+  }
 }
 ```
-我们在，`address`属性变化时去更新 `view`，并且在 `view`有交互时通过` IBAction`去更新 `model`。
-上面只是给出了一个简单的例子来表示 MVC 是如何工作的。我们可以看到 controller 如何持有 model 和 views，并且通过 controller 交互。
-## 使用时应该注意的地方
-MVC 是一个好的开始，但是它有局限性。不是每一个对象都能很好的归类于 model，view ，controller 的范围中。因此，只是用 MVC 的应用在 controllers 中有很多逻辑，导致 view controller 越来越大。
-为了解决这个问题，需要在需要时引入其他的设计模式。
+`UITableViewDelegate` 和 `UITableViewDataSource` 都是委托协议，他们定义了委托对象必须实现的方法。
+可以非常简单的定义你自己的委托。比如：你可以创建一个委托来通知用户点击的 menuItem：
+
+```swift
+protocol MenuViewControllerDelegate {
+  func menuViewController( _ menuViewController: MenuViewController, didSelectItemAtIndex index: Int)
+}
+```
+接下来，给 `MenuViewController` 添加一个属性：
+
+```swift
+var delegate: MenuViewControllerDelegate?
+```
+iOS 中的习惯是当一个对象创建后来设置委托对象。所以，当创建一个 `MenuViewController` 后，来设置它的委托对象。
+最后，当用户点击一个 item，你应该去通知委托对象。我们把 `tableView` 委托的 `didSelectd` 方法添加以下方法：
+
+```swift
+delegate?.menuViewController(self, didSelectItemAtIndex: indexPath.row)
+```
+在委托方法中，一般我们都把需要委托的对象作为参数传过去，在这个例子中就是 `MenuViewController`，这样，委托对象就可以在需要的时候去使用或者检查调用者了。
+现在，你已经创建了你自己的委托协议，在一个真实的 app 中，item 在被点击了经常需要处理一些逻辑，比如跳转到一个新的视图。
+## 应该注意的地方
+委托非常有用，但是经常被滥用。不要为一个对象创建太多的委托。如果一个对象需要几个委托，可能表示这个类做了太多事情。这是应该考虑为特定的情况分解对象的功能，而不是一个包罗万象的类。
+很难说清楚多少是多，但是有一个黄金法则。如果你经常在两个类之间来回切换来了解发生了什么，那就说明太多了。同样的，如果你不能理解某个委托的用处，也说明太多了。
 ## 教程项目
-通过这一整章，我们会做一个应用叫做：Rabble Wabble(就是一个类似背单词的 app)。这一小篇的效果如下：
-![MVC](http://ohg2bgicd.bkt.clouddn.com/MVC.gif)
-功能类似一个背单词的 app，点击空白处显示答案，点正确，正确数加1，点错误错误数加1。很简单吧，利用这个功能，我们可以了解下 MVC 各个模块通信方式。通过下面的学习，我们将逐步完善这个应用。
+上一篇 MVC 之后，我们已经实现了可以一些功能，比如，点击屏幕可以显示答案，点击正确和错误按钮可以记录正确和错误的个数。
+接下来我们需要实现让用户可以选择问题组的一个列表，并且在 `QuestionViewControlle` 中添加了取消按钮、显示当前问题下标和回答完问题再点击正确或者错误按钮返回的操作。这些操作使用委托模式实现。具体效果如下图：
+![-c375](http://ohg2bgicd.bkt.clouddn.com/2018-08-21 11.26.33.gif)
+## 预告
+下一章我们会学习策略模式，并且继续完善 RabbleWabble。

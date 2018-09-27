@@ -116,6 +116,6 @@ public class MoviewRatingViewController: UIViewController {
 我们接着委托模式继续做那个 app。我们添加一个可以随机顺序回答问题的机制。这样我们就可以不按顺序回答问题了。但是，有些人可能想要顺序回答问题。这里我们用策略模式来实现。实现效果：
 ![](http://ohg2bgicd.bkt.clouddn.com/2018-09-27%2019.02.31.gif?imageMogr2/auto-orient/thumbnail/350x/blur/1x0/quality/100%7Cimageslim)
 
-[Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Strategy/RabbleWabble/RabbleWabble/Strategies)
+[Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Strategy)
 ## 预告
 下一节将要介绍单例模式。

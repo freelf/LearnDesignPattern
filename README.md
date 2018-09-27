@@ -6,4 +6,5 @@
 这一章包括一些基础的设计模式：MVC、代理、策略、单例、备忘录、观察者和 build 模式。通过学习这些设计模式，我们会做一个RabbleWabble(就是一个类似背单词的应用)应用。我会把每一小篇都分一个分支，方便大家查看。
 1. [MVC](https://github.com/zhangdongpo/LearnDesignPattern/tree/MVC)
 2. [Delegate](https://github.com/zhangdongpo/LearnDesignPattern/tree/Delegate)
+3. [Strategy](https://github.com/zhangdongpo/LearnDesignPattern/tree/Strategy)
                    

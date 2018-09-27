@@ -1,95 +1,120 @@
-## 介绍委托模式
-委托模式使一个对象能够使用另一个对象来提供数据或者执行一些任务，这个模式有三个部分，UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/15344108237603.jpg)
-<!-- more -->
-* 一个**对象需要委托**：也就是委托对象。通常这个对象有一个`weak` 属性 `delegate`，防止循环引用。
-* 一个**委托协议**：这个协议定义了委托应该实现或者可能实现的方法。
-* 一个**委托**：实现委托方法的对象。
+## 介绍策略模式
+策略模式定义了一系列可交换的对象，这些对象可以在运行时设置或者切换。这个模式有三部分。
+* **使用策略的对象**：在 iOS 开发中这个对象通常是一个`UIViewController`，但是理论上可以是任何需要交换表现的对象。
+* **策略协议**：定义了每个策略必须实现的方法。
+* **策略对象**：遵守策略协议的对象。
 
-通过依赖一个委托协议代替一个混合对象使得实现更加有弹性，只要一个对象实现了协议就可以作为一个委托对象。
-## 什么时候使用
-使用委托模式可以拆分大型类或者创建通用的、可重用的组件。委托关系在 Apple 的框架中很常见，尤其是 `UIKit`。名字中有 `DataSource` 和 `Delegate` 的对象实际上都遵守了代理模式。
-在 Apple 的框架中为什么不是一个协议，而是两个？
-Apple 的框架通常使用 `DataSource` 来对提供数据的委托方法进行分组，使用 `Delegate` 来对接收数据或者事件的委托方法分组。比如：`UITableViewDataSource` 是想要提供一个 `UITableViewCell` 来展示， `UITableViewDelegate` 通知那行被选中了。
-通常 `dataSource` 和 `delegate` 被设置为一个对象，比如拥有 `UITableView`的 view controller。然而，不是必须这样做。把它设置到另一个对象更有好处。
+UML 图如下：
+![](http://ohg2bgicd.bkt.clouddn.com/1538047244.png)
+## When should you use it?
+当你有两个或多个需要交换的表现时需要使用策略模式。
+这个模式和委托模式相似：因为两个模式都是依赖于协议而不出具体对象来提高弹性。通常，任何实现了策略协议的对象可以在运行时被用做协议对象。
+不想委托，策略模式使用一系列对象。
+委托经常在运行时确定。比如，`UITableView`的`dataSource`和`delegate`可以在 Interface Builder 中设置，但是它们在运行时很少改变。
+然而，策略的目的是在运行时可以轻松的交换。
+
 ## Playground example
-委托协议是一个表现类型的设计模式。这是因为委托都是一个对象和另一个对象交流有关。
-下面的代码将创建一个`MenuViewController`，这个 VC 有一个 `tableView`，并且是这个 `tableView` 的委托和数据源。
-首先创建 `MenuViewController`：
 
+策略模式是一种表现型模式，因为策略模式是关于一个对象使用另一个对象来做一些事情。
+下面的代码例子是一个关于电影评分的例子。想象一个 app 使用几个电影评分服务。比如：烂番茄，IMDb和Metacritic。为了不重复为每种服务写代码，我们来使用策略模式来简化实现。可以创建一个定义了通用 API 的协议来获取每种服务。
+首先我们定义一个策略协议：
+```swift
+public protocol MovieRatingStrategy {
+  // 1
+  var ratingServiceName: String { get }
+  
+  // 2
+  func fetchRating(for movieTitle: String,
+           success: (_ rating: String, _ review: String) -> ())
+}
+```
+1. 我们使用`ratingServiceName`来表示提供评分的服务。比如：它可能是烂番茄。
+2. 我们使用`fetchRatingForMovieTitle(_:success:)`来获取异步获取电影评分。在真实的 app 中，可能需要一个失败的 closure。
+
+接下来，添加烂番茄客户端的实现代码：
+```swift
+public class RottenTomatoesClient: MovieRatingStrategy {
+  public let ratingServiceName = "Rotten Tomatoes"
+  
+  public func fetchRating(
+    for movieTitle: String,
+    success: (_ rating: String, _ review: String) -> ()) {
+    
+    // In a real service, you'd make a network request...
+    // Here, we just provide dummy values...
+    let rating = "95%"
+    let review = "It rocked!"
+    success(rating, review)
+  }
+}
+
+```
+然后，添加 IMDb 客户端的实现代码：
+```swift
+public class IMDbClient: MovieRatingStrategy {
+  public let ratingServiceName = "IMDb"
+  
+  public func fetchRating(
+    for movieTitle: String,
+    success: (_ rating: String, _ review: String) -> ()) {
+    
+    let rating = "3 / 10"
+    let review = """
+    It was terrible! The audience was throwing rotten
+    tomatoes!
+    """
+    success(rating, review)
+  }
+}
+```
+因为所有提供服务的客户端都遵守了`MovieRatingStrategy`。使用策略的对象不必要直接指导它们的类型，代替的，它们仅仅依赖协议。
+作为例子，添加下面代码：
 ```swift
 import UIKit
 
-class MenuViewController: UIViewController {
-  // 1
-  @IBOutlet var tableView: UITableView! {
-    didSet {
-      tableView.dataSource = self
-      tableView.delegate = self
+public class MoviewRatingViewController: UIViewController {
+  
+  // MARK: - Properties
+  public var movieRatingClient: MovieRatingStrategy!
+  
+  // MARK: - Outlets
+  @IBOutlet public var movieTitleTextField: UITextField!
+  @IBOutlet public var ratingServiceNameLabel: UILabel!
+  @IBOutlet public var ratingLabel: UILabel!
+  @IBOutlet public var reviewLabel: UILabel!
+  
+  // MARK: - View Lifecycle
+  public override func viewDidLoad() {
+    super.viewDidLoad()
+    ratingServiceNameLabel.text =
+      movieRatingClient.ratingServiceName
+  }
+  
+  // MARK: - Actions
+  @IBAction public func searchButtonPressed(sender: Any) {
+    guard let movieTitle = movieTitleTextField.text
+      else { return }
+    
+    movieRatingClient.fetchRating(for: movieTitle) {
+      (rating, review) in
+      self.ratingLabel.text = rating
+      self.reviewLabel.text = review
     }
   }
-  // 2
-  let items = ["Item 1", "Item 2", "Item 3"]
-}
-```
-添加下面的代码，设置 `MenuViewController` 为 `tableView` 的数据源和委托：
-
-```swift
-// MARK: - UITableViewDataSource
-extension MenuViewController: UITableViewDataSource {
-  
-  func tableView(_ tableView: UITableView,
-                 cellForRowAt indexPath: IndexPath)
-                 -> UITableViewCell {
-    let cell = 
-      tableView.dequeueReusableCell(withIdentifier: "Cell",
-                                    for: indexPath)
-    cell.textLabel?.text = items[indexPath.row]
-    return cell
-  }
-
-  func tableView(_ tableView: UITableView,
-                 numberOfRowsInSection section: Int) -> Int {
-    return items.count
-  }
 }
 
-// MARK: - UITableViewDelegate
-extension MenuViewController: UITableViewDelegate {
-
-  func tableView(_ tableView: UITableView,
-                 didSelectRowAt indexPath: IndexPath) {
-    // To do next....
-  }
-}
 ```
-`UITableViewDelegate` 和 `UITableViewDataSource` 都是委托协议，他们定义了委托对象必须实现的方法。
-可以非常简单的定义你自己的委托。比如：你可以创建一个委托来通知用户点击的 menuItem：
+当这个 view controller 在 app 中实例化时，需要设置`movieRatingClient`属性。注意，view controller 不知道`MovieRatingStrategy`具体实现。
+使用哪个 MovieRatingStrategy 的决定可以推迟到运行时，可以让用户选择。
 
-```swift
-protocol MenuViewControllerDelegate {
-  func menuViewController( _ menuViewController: MenuViewController, didSelectItemAtIndex index: Int)
-}
-```
-接下来，给 `MenuViewController` 添加一个属性：
+## What should you be careful about？
 
-```swift
-var delegate: MenuViewControllerDelegate?
-```
-iOS 中的习惯是当一个对象创建后来设置委托对象。所以，当创建一个 `MenuViewController` 后，来设置它的委托对象。
-最后，当用户点击一个 item，你应该去通知委托对象。我们把 `tableView` 委托的 `didSelectd` 方法添加以下方法：
+小心滥用这个模式。实际情况下，如果一个表现不会改变，可以直接放到使用的view controller 或者对象的上下文中。使用这个模式得技巧是知道什么时候切换行为。并且可以在确定需要的地方 lazy 的去做。
 
-```swift
-delegate?.menuViewController(self, didSelectItemAtIndex: indexPath.row)
-```
-在委托方法中，一般我们都把需要委托的对象作为参数传过去，在这个例子中就是 `MenuViewController`，这样，委托对象就可以在需要的时候去使用或者检查调用者了。
-现在，你已经创建了你自己的委托协议，在一个真实的 app 中，item 在被点击了经常需要处理一些逻辑，比如跳转到一个新的视图。
-## 应该注意的地方
-委托非常有用，但是经常被滥用。不要为一个对象创建太多的委托。如果一个对象需要几个委托，可能表示这个类做了太多事情。这是应该考虑为特定的情况分解对象的功能，而不是一个包罗万象的类。
-很难说清楚多少是多，但是有一个黄金法则。如果你经常在两个类之间来回切换来了解发生了什么，那就说明太多了。同样的，如果你不能理解某个委托的用处，也说明太多了。
-## 教程项目
-上一篇 MVC 之后，我们已经实现了可以一些功能，比如，点击屏幕可以显示答案，点击正确和错误按钮可以记录正确和错误的个数。
-接下来我们需要实现让用户可以选择问题组的一个列表，并且在 `QuestionViewControlle` 中添加了取消按钮、显示当前问题下标和回答完问题再点击正确或者错误按钮返回的操作。这些操作使用委托模式实现。具体效果如下图：
-![-c140](http://ohg2bgicd.bkt.clouddn.com/delegate.gif)
+## Tutorial project
+
+我们接着委托模式继续做那个 app。我们添加一个可以随机顺序回答问题的机制。这样我们就可以不按顺序回答问题了。但是，有些人可能想要顺序回答问题。这里我们用策略模式来实现。实现效果：
+![](http://ohg2bgicd.bkt.clouddn.com/2018-09-27%2019.02.31.gif?imageMogr2/auto-orient/thumbnail/350x/blur/1x0/quality/100%7Cimageslim)
+[Demo]()
 ## 预告
-下一章我们会学习策略模式，并且继续完善 RabbleWabble。
+下一节将要介绍单例模式。

@@ -11,10 +11,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Question View Controlle-->
+        <!--Question View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="QuestionViewControlle" customModule="RabbleWabble" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="QuestionViewController" customModule="RabbleWabble" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="QuestionView" customModule="RabbleWabble" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -144,6 +144,7 @@
                                                 <constraint firstAttribute="trailingMargin" secondItem="b6H-VB-MR8" secondAttribute="trailing" id="RKP-6Y-o9h"/>
                                                 <constraint firstItem="b6H-VB-MR8" firstAttribute="top" secondItem="5wC-eF-wcG" secondAttribute="topMargin" id="eq2-sB-DHA"/>
                                                 <constraint firstAttribute="trailingMargin" secondItem="a6P-b2-JEq" secondAttribute="trailing" constant="8" id="fe8-rL-KqW"/>
+                                                <constraint firstItem="b6H-VB-MR8" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="5wC-eF-wcG" secondAttribute="leadingMargin" id="q6h-zp-C6Y"/>
                                                 <constraint firstAttribute="bottomMargin" secondItem="b6H-VB-MR8" secondAttribute="bottom" id="zrA-cc-Aua"/>
                                             </constraints>
                                         </tableViewCellContentView>

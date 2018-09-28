@@ -7,4 +7,5 @@
 1. [MVC](https://github.com/zhangdongpo/LearnDesignPattern/tree/MVC)
 2. [Delegate](https://github.com/zhangdongpo/LearnDesignPattern/tree/Delegate)
 3. [Strategy](https://github.com/zhangdongpo/LearnDesignPattern/tree/Strategy)
+4. [Singleton](https://github.com/zhangdongpo/LearnDesignPattern/tree/Singleton)
                    

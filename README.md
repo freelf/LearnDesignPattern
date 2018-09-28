@@ -84,7 +84,7 @@ let singletonPlus2 = SingletonPlus()
 
 <img src="http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif" width="375px" />
 
-[Demo](#)
+[Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Singleton)
 
 ## 预告
 

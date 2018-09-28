@@ -1,120 +1,89 @@
-## 介绍策略模式
-策略模式定义了一系列可交换的对象，这些对象可以在运行时设置或者切换。这个模式有三部分。
-* **使用策略的对象**：在 iOS 开发中这个对象通常是一个`UIViewController`，但是理论上可以是任何需要交换表现的对象。
-* **策略协议**：定义了每个策略必须实现的方法。
-* **策略对象**：遵守策略协议的对象。
-
+## 单例模式
+单例模式限制一个类仅仅有一个实例。每个这个类的引用都指向同一个实例。在 iOS 开发中非常常见这种模式，因为 Apple 广泛使用单例模式。
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538047244.png)
+![](http://ohg2bgicd.bkt.clouddn.com/1538101105.png)
+“singleton plus”模式也很常用，这个模式提供了一个共享单例，但是也允许其他实例被创建。
+
 ## When should you use it?
-当你有两个或多个需要交换的表现时需要使用策略模式。
-这个模式和委托模式相似：因为两个模式都是依赖于协议而不出具体对象来提高弹性。通常，任何实现了策略协议的对象可以在运行时被用做协议对象。
-不想委托，策略模式使用一系列对象。
-委托经常在运行时确定。比如，`UITableView`的`dataSource`和`delegate`可以在 Interface Builder 中设置，但是它们在运行时很少改变。
-然而，策略的目的是在运行时可以轻松的交换。
+
+如果一个类有多个实例会导致问题或者不符合逻辑时使用单例模式。
+如果在大部分时间共享实例有用，但是你也想要创建一个自定义实例时使用 sigleton plus 模式。`FileManager`就是一个例子。他有一个`default`实例，这是一个单例，但是你也可以自己创建一个。如果你再后台线程使用它，通常需要创建一个自己的。
 
 ## Playground example
 
-策略模式是一种表现型模式，因为策略模式是关于一个对象使用另一个对象来做一些事情。
-下面的代码例子是一个关于电影评分的例子。想象一个 app 使用几个电影评分服务。比如：烂番茄，IMDb和Metacritic。为了不重复为每种服务写代码，我们来使用策略模式来简化实现。可以创建一个定义了通用 API 的协议来获取每种服务。
-首先我们定义一个策略协议：
-```swift
-public protocol MovieRatingStrategy {
-  // 1
-  var ratingServiceName: String { get }
-  
-  // 2
-  func fetchRating(for movieTitle: String,
-           success: (_ rating: String, _ review: String) -> ())
-}
-```
-1. 我们使用`ratingServiceName`来表示提供评分的服务。比如：它可能是烂番茄。
-2. 我们使用`fetchRatingForMovieTitle(_:success:)`来获取异步获取电影评分。在真实的 app 中，可能需要一个失败的 closure。
-
-接下来，添加烂番茄客户端的实现代码：
-```swift
-public class RottenTomatoesClient: MovieRatingStrategy {
-  public let ratingServiceName = "Rotten Tomatoes"
-  
-  public func fetchRating(
-    for movieTitle: String,
-    success: (_ rating: String, _ review: String) -> ()) {
-    
-    // In a real service, you'd make a network request...
-    // Here, we just provide dummy values...
-    let rating = "95%"
-    let review = "It rocked!"
-    success(rating, review)
-  }
-}
-
-```
-然后，添加 IMDb 客户端的实现代码：
-```swift
-public class IMDbClient: MovieRatingStrategy {
-  public let ratingServiceName = "IMDb"
-  
-  public func fetchRating(
-    for movieTitle: String,
-    success: (_ rating: String, _ review: String) -> ()) {
-    
-    let rating = "3 / 10"
-    let review = """
-    It was terrible! The audience was throwing rotten
-    tomatoes!
-    """
-    success(rating, review)
-  }
-}
-```
-因为所有提供服务的客户端都遵守了`MovieRatingStrategy`。使用策略的对象不必要直接指导它们的类型，代替的，它们仅仅依赖协议。
-作为例子，添加下面代码：
+**单例模式**是**创建模式**的一种。因为单例是关于创建一个共享实例。
+单例和 singleton plus 在 Apple 的框架中很普遍。
+比如：`UIApplication`是一个纯单例。
 ```swift
 import UIKit
 
-public class MoviewRatingViewController: UIViewController {
-  
-  // MARK: - Properties
-  public var movieRatingClient: MovieRatingStrategy!
-  
-  // MARK: - Outlets
-  @IBOutlet public var movieTitleTextField: UITextField!
-  @IBOutlet public var ratingServiceNameLabel: UILabel!
-  @IBOutlet public var ratingLabel: UILabel!
-  @IBOutlet public var reviewLabel: UILabel!
-  
-  // MARK: - View Lifecycle
-  public override func viewDidLoad() {
-    super.viewDidLoad()
-    ratingServiceNameLabel.text =
-      movieRatingClient.ratingServiceName
-  }
-  
-  // MARK: - Actions
-  @IBAction public func searchButtonPressed(sender: Any) {
-    guard let movieTitle = movieTitleTextField.text
-      else { return }
-    
-    movieRatingClient.fetchRating(for: movieTitle) {
-      (rating, review) in
-      self.ratingLabel.text = rating
-      self.reviewLabel.text = review
-    }
-  }
-}
-
+// MARK: - Singleton
+let app = UIApplication.shared
+// let app2 = UIApplication()
 ```
-当这个 view controller 在 app 中实例化时，需要设置`movieRatingClient`属性。注意，view controller 不知道`MovieRatingStrategy`具体实现。
-使用哪个 MovieRatingStrategy 的决定可以推迟到运行时，可以让用户选择。
+如果你把 app2 解注，会编译错误。`UIApplication`不允许创建其他实例。
+你也可以创建自己的单例类，比如以下代码：
+```swift
+public class MySingleton {
+  // 1
+  static let shared = MySingleton()
+  // 2
+  private init() { }
+}
+// 3
+let mySingleton = MySingleton.shared
+// 4
+// let mySingleton2 = MySingleton()
+```
+1. 首先声明一个 `public static` 属性，叫做`shared`,这是一个单例实例。
+2. 把`init`方法私有化，不允许创建其他的实例。
+3. 使用`MySingleton.shared`获取单例。
+4. 如果你创建额外的实例将会导致编译错误。
 
-## What should you be careful about？
+singleton plus 例子如下：
+```swift
+// MARK: - Singleton Plus
+let defaultFileManager = FileManager.default
+let customFileManager = FileManager()
+```
+`FileManager`提供了`default`单例。
+我们可以创建一个新的实例，并不会导致编译错误。这说明`FileManager`提供了 singleton plus 模式。
+我们可以很简单的创建自己的 singleton plus 模式类，比如下面代码：
+```swift
+public class SingletonPlus {
+  // 1
+  static let shared = SingletonPlus()
+  // 2
+  public init() { }
+}
+// 3
+let singletonPlus = SingletonPlus.shared
+// 4
+let singletonPlus2 = SingletonPlus()
+```
+1. 我们声明一个`shared`属性，就像单例模式一样。有时这个属性也叫做`default`。
+2. 不想纯单例，我们把`init`方法声明为`public`,允许创建额外的实例。
+3. 可以通过`MySingletonPlus.shared`获取单例。
+4. 也可以创建一个新的实例。
 
-小心滥用这个模式。实际情况下，如果一个表现不会改变，可以直接放到使用的view controller 或者对象的上下文中。使用这个模式得技巧是知道什么时候切换行为。并且可以在确定需要的地方 lazy 的去做。
+## What should you be careful about?
 
+单例模式非常容易滥用。
+如果你某个地方想用单例，首先考虑下其他方式完成任务。
+比如：如果你仅仅从一个 view controller 传递消息到另一个 view controller，单例不适合。可以通过一个初始化函数或者属性传递。
+如果你确定你确实需要单例，考虑下是否 singleton plus 更有用。
+是否多个实例会导致问题？是否自定义实例会有用处？这两个问题的答案将会决定到底使用纯单例还是 singleton plus。
+单例通常会为测试带来麻烦。如果你将状态存在全局对象中，比如单例。那么测试的顺序可能很重要。模仿这些顺序很痛苦。这就是导致测试很痛苦的原因。
+如果你经常需要一些自定义实例，那么使用普通对象最好。
 ## Tutorial project
 
-我们接着委托模式继续做那个 app。我们添加一个可以随机顺序回答问题的机制。这样我们就可以不按顺序回答问题了。但是，有些人可能想要顺序回答问题。这里我们用策略模式来实现。实现效果：
-![](http://ohg2bgicd.bkt.clouddn.com/2018-09-27%2019.02.31.gif?imageMogr2/auto-orient/thumbnail/350x/blur/1x0/quality/100%7Cimageslim)
-[Demo]()
+接下在我们继续以前的工程。
+上一章我们在使用策略时采用了硬编码的方式。用户不能手动改变策略。这节的任务就是可以让用户自己选择问题展示的方式。可以切换顺序展示还是随机展示。
+首先我们需要有一个地方去存储 app 的设置。你需要创建一个单例来实现这个。
+实现效果如下：
+![](http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100%7Cimageslim)
+[Demo](#)
+
 ## 预告
-下一节将要介绍单例模式。
+
+下节将介绍备忘录模式。

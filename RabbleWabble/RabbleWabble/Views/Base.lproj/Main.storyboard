@@ -103,7 +103,25 @@
                     </connections>
                 </tapGestureRecognizer>
             </objects>
-            <point key="canvasLocation" x="1076" y="132.68365817091455"/>
+            <point key="canvasLocation" x="1201" y="-90"/>
+        </scene>
+        <!--App Settings View Controller-->
+        <scene sceneID="XGH-M9-bFo">
+            <objects>
+                <tableViewController id="HIJ-DS-AqD" customClass="AppSettingsViewController" customModule="RabbleWabble" customModuleProvider="target" sceneMemberID="viewController">
+                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="yVT-5y-OHr">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <connections>
+                            <outlet property="dataSource" destination="HIJ-DS-AqD" id="wlj-e5-rU4"/>
+                            <outlet property="delegate" destination="HIJ-DS-AqD" id="LHd-fx-ndZ"/>
+                        </connections>
+                    </tableView>
+                </tableViewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="QEa-sZ-2zY" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1201" y="570"/>
         </scene>
         <!--Select Question Group-->
         <scene sceneID="YKf-hW-OaW">
@@ -170,7 +188,13 @@
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Q8v-Mi-l4M"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Select Question Group" id="1Bh-q0-JmX"/>
+                    <navigationItem key="navigationItem" title="Select Question Group" id="1Bh-q0-JmX">
+                        <barButtonItem key="leftBarButtonItem" image="ic_settings" id="cC5-2o-QHm">
+                            <connections>
+                                <segue destination="HIJ-DS-AqD" kind="show" id="tuR-yf-Z6b"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                     <connections>
                         <outlet property="tableView" destination="6CY-cY-vb2" id="UcX-n0-tsH"/>
                     </connections>
@@ -201,5 +225,6 @@
     <resources>
         <image name="ic_circle_check" width="80" height="80"/>
         <image name="ic_circle_x" width="80" height="80"/>
+        <image name="ic_settings" width="26" height="26"/>
     </resources>
 </document>

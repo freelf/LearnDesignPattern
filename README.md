@@ -81,7 +81,7 @@ let singletonPlus2 = SingletonPlus()
 上一章我们在使用策略时采用了硬编码的方式。用户不能手动改变策略。这节的任务就是可以让用户自己选择问题展示的方式。可以切换顺序展示还是随机展示。
 首先我们需要有一个地方去存储 app 的设置。你需要创建一个单例来实现这个。
 实现效果如下：
-![](http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100%7Cimageslim)
+<img src="http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif" width="375px" />
 [Demo](#)
 
 ## 预告

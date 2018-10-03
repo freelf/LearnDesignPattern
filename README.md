@@ -1,89 +1,124 @@
-## 单例模式
-单例模式限制一个类仅仅有一个实例。每个这个类的引用都指向同一个实例。在 iOS 开发中非常常见这种模式，因为 Apple 广泛使用单例模式。
+## 备忘录模式
+备忘录模式允许一个对象可以被保存和恢复。包括三个部分。
+1. **Originator**: 需要被保存和恢复的对象。
+2. **Memento**: 代表保存的状态。
+3. ** Caretaker**: 从 originator 请求保存，并且接收一个 memento 作为响应。caretaker 负责保管这些 memento，并在稍后向 originator 提供这些 memento来恢复 originator 的状态。
+虽然不是严格要求，iOS通常使用`Encoder`来讲 originator 的状态保存到 memento，并且使用`Decoder`把 memento 恢复到 originator。这使编码和解码的逻辑可以通用。比如：`JSONEncoder`和`JSONDecoder`允许一个对象可以编码为 `JSON` 数据，也可以从`JSON`数据中解码。
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538101105.png)
-“singleton plus”模式也很常用，这个模式提供了一个共享单例，但是也允许其他实例被创建。
+![](http://ohg2bgicd.bkt.clouddn.com/1538272701.png)
 
 ## When should you use it?
 
-如果一个类有多个实例会导致问题或者不符合逻辑时使用单例模式。
-如果在大部分时间共享实例有用，但是你也想要创建一个自定义实例时使用 sigleton plus 模式。`FileManager`就是一个例子。他有一个`default`实例，这是一个单例，但是你也可以自己创建一个。如果你再后台线程使用它，通常需要创建一个自己的。
+当我们想要保存并且以后需要恢复一个对象的状态时需要用到备忘录模式。
+比如：我们可以使用这个模式来实现一个游戏系统，originator 就是游戏的状态(比如：等级，健康状态，生命值等等)，memento 就是保存的数据，caretaker 就是游戏系统。
+我们可以持续保存一系列数据，表示一个以前的存档。我们也可以用这个模式在 IDEs或者图表软件中实现一些 undo/redo 的特性。
 
 ## Playground example
 
-**单例模式**是**创建模式**的一种。因为单例是关于创建一个共享实例。
-单例和 singleton plus 在 Apple 的框架中很普遍。
-比如：`UIApplication`是一个纯单例。
+**备忘录模式**是**表现模式**得一种。这是因为这个模式是和保存和恢复表现相关的模式。我们在这个例子中创建一个简单的游戏系统。
+首先我们需要定义一个 **originator**，用以下代码来创建：
 ```swift
-import UIKit
+import Foundation
 
-// MARK: - Singleton
-let app = UIApplication.shared
-// let app2 = UIApplication()
-```
-如果你把 app2 解注，会编译错误。`UIApplication`不允许创建其他实例。
-你也可以创建自己的单例类，比如以下代码：
-```swift
-public class MySingleton {
-  // 1
-  static let shared = MySingleton()
-  // 2
-  private init() { }
+// MARK: - Originator
+public class Game: Codable {
+  
+  public class State: Codable {
+    public var attemptsRemaining: Int = 3
+    public var level: Int = 1
+    public var score: Int = 0
+  }
+  public var state = State()
+  
+  public func rackUpMassivePoints() {
+    state.score += 9002
+  }
+  
+  public func monstersEatPlayer() {
+    state.attemptsRemaining -= 1
+  }
 }
-// 3
-let mySingleton = MySingleton.shared
-// 4
-// let mySingleton2 = MySingleton()
 ```
-1. 首先声明一个 `public static` 属性，叫做`shared`,这是一个单例实例。
-2. 把`init`方法私有化，不允许创建其他的实例。
-3. 使用`MySingleton.shared`获取单例。
-4. 如果你创建额外的实例将会导致编译错误。
-
-singleton plus 例子如下：
+这里，你定义了一个`Game`类，它有一个内部`State`保存 game 属性，并且它有操作游戏内动作的方法。我们还要声明`Game`和`State`遵守`Codable`协议。
+什么是`Codable`? Apple 在 Swift 4中引进了`Codable`。任何类型都可以遵守`Codable`,用 Apple 的话来说就是：转换本身的外部代表。本质上，就是一个可以存储和恢复其自己的类型。听起来很类似？是的，这的确就是我们想让 originator 拥有的能力。
+因为`Game`和`State`的所有属性都遵守了`Codable`协议，编译器会自动生成`Codable`协议所必须实现的方法。`String`,`Int`,`Double`和大多数`Swift`提供的类型都遵守了`Codable`协议。
+`Codable`是一个`typealias`,结合了`Encodable`和`Decodable`协议：
 ```swift
-// MARK: - Singleton Plus
-let defaultFileManager = FileManager.default
-let customFileManager = FileManager()
+typealias Codable = Decodable & Encodable
 ```
-`FileManager`提供了`default`单例。
-我们可以创建一个新的实例，并不会导致编译错误。这说明`FileManager`提供了 singleton plus 模式。
-我们可以很简单的创建自己的 singleton plus 模式类，比如下面代码：
+可编码类型可以通过`Encoder`编码为外部表示。外部表示的实际类型取决于你所使用的`Encoder`。`Foundation`提供了几种默认的编码器，比如`J SONEncoder`是为了把对象转化为 JSON 数据。
+可以通过`Decoder`把外部表现转化为可解码类型。`Foundation`也提供了解码器。比如`JSONDecoder`可以把 JSON 数据转化为对象。
+接下来我们需要一个**memento**，在上面的代码下面添加如下代码：
 ```swift
-public class SingletonPlus {
-  // 1
-  static let shared = SingletonPlus()
-  // 2
-  public init() { }
+// MARK: - Memento
+typealias GameMemento = Data
+```
+理论上，我们一点也不需要这样声明。这里就是说明你`GameMemento`实际上是`Data`。这将是`Encoder`存储的数据，并且是`Decoder`恢复的元数据。
+接下来，我们需要添加一个**caretaker**,添加如下代码：
+```swift
+// MARK: - CareTaker
+public class GameSystem {
+  
+  private let decoder = JSONDecoder()
+  private let encoder = JSONEncoder()
+  private let userDefaults = UserDefaults.standard
+  
+  public func save(_ game: Game, title: String) throws {
+    let data = try encoder.encode(game)
+    userDefaults.set(data, forKey: title)
+  }
+  
+  public func load(title: String) throws -> Game {
+    guard let data = userDefaults.data(forKey: title),
+      let game = try? decoder.decode(Game.self, from: data)
+      else {
+        throw Error.gameNotFound
+    }
+    return game
+  }
+  
+  public enum Error: String, Swift.Error {
+    case gameNotFound
+  }
 }
-// 3
-let singletonPlus = SingletonPlus.shared
-// 4
-let singletonPlus2 = SingletonPlus()
 ```
-1. 我们声明一个`shared`属性，就像单例模式一样。有时这个属性也叫做`default`。
-2. 不想纯单例，我们把`init`方法声明为`public`,允许创建额外的实例。
-3. 可以通过`MySingletonPlus.shared`获取单例。
-4. 也可以创建一个新的实例。
+我们先来模拟一下游戏过程：
+```swift
+// MARK: - Example
+var game = Game()
+game.monstersEatPlayer()
+game.rackUpMassivePoints()
+```
+然后存储一下：
+```swift
+// Save Game
+let gameSystem = GameSystem()
+try gameSystem.save(game, title: "Best Game Ever")
+```
+然后读取一下记录：
+```swift
+// Load Game
+game = try! gameSystem.load(title: "Best Game Ever")
+print("Loaded Game Score: \(game.state.score)")
+```
+Emmm,是不是很不错！
 
 ## What should you be careful about?
 
-单例模式非常容易滥用。
-如果你某个地方想用单例，首先考虑下其他方式完成任务。
-比如：如果你仅仅从一个 view controller 传递消息到另一个 view controller，单例不适合。可以通过一个初始化函数或者属性传递。
-如果你确定你确实需要单例，考虑下是否 singleton plus 更有用。
-是否多个实例会导致问题？是否自定义实例会有用处？这两个问题的答案将会决定到底使用纯单例还是 singleton plus。
-单例通常会为测试带来麻烦。如果你将状态存在全局对象中，比如单例。那么测试的顺序可能很重要。模仿这些顺序很痛苦。这就是导致测试很痛苦的原因。
-如果你经常需要一些自定义实例，那么使用普通对象最好。
+当添加和移除`Codable`属性时需要当心，编码和解码都是可以抛出错误的。如果我们使用`try!`强制解包，并且丢失了必要的数据，app 会 crash。
+为了规避这种问题，除非你确定操作可以成功，应该尽量避免使用`try!`。当改变模型时也需要提前规划。比如：我们可以给模型添加版本号或者使用带版本号的数据库。然而我们需要考虑入魂儿处理版本升级。我们可以选择当我们有一个新的版本时删掉旧的数据，或者创建一个升级路径把旧的数据转化为新的数据，或者使用这两种方法的结合。
+
 ## Tutorial project
 
-接下在我们继续以前的工程。
-上一章我们在使用策略时采用了硬编码的方式。用户不能手动改变策略。这节的任务就是可以让用户自己选择问题展示的方式。可以切换顺序展示还是随机展示。
-首先我们需要有一个地方去存储 app 的设置。你需要创建一个单例来实现这个。
-实现效果如下：
-![](http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100%7Cimageslim)
-[Demo](#)
-
+下面我们继续给我们以前的 app 增加功能。我们将使用备忘录模式添加一个 app 重要的特性：保存`QuestionGroup`分数的能力。
+实现效果：
+![](http://ohg2bgicd.bkt.clouddn.com/2018-10-03%2010.57.41.gif)
+再次运行会在控制台打印：
+```swift
+Hiragana: correctCount 5, incorrectCount 6
+Katakana: correctCount 5, incorrectCount 5
+Basic Phrases: correctCount 0, incorrectCount 0
+Numbers: correctCount 0, incorrectCount 0
+```
 ## 预告
-
-下节将介绍备忘录模式。
+下节我们将学习观察者模式。

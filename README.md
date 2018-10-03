@@ -122,7 +122,7 @@ Katakana: correctCount 5, incorrectCount 5
 Basic Phrases: correctCount 0, incorrectCount 0
 Numbers: correctCount 0, incorrectCount 0
 ```
-[Demo](https://github.com/zhangdongpo/LearnDesignPattern/edit/Memento)
+[Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Memento)
 
 ## 预告
 下节我们将学习观察者模式。

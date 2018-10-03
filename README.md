@@ -112,7 +112,9 @@ Emmm,是不是很不错！
 
 下面我们继续给我们以前的 app 增加功能。我们将使用备忘录模式添加一个 app 重要的特性：保存`QuestionGroup`分数的能力。
 实现效果：
-![](http://ohg2bgicd.bkt.clouddn.com/2018-10-03%2010.57.41.gif)
+
+<img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-03%2010.57.41.gif" width="375px" />
+
 再次运行会在控制台打印：
 ```swift
 Hiragana: correctCount 5, incorrectCount 6
@@ -120,5 +122,7 @@ Katakana: correctCount 5, incorrectCount 5
 Basic Phrases: correctCount 0, incorrectCount 0
 Numbers: correctCount 0, incorrectCount 0
 ```
+[Demo](https://github.com/zhangdongpo/LearnDesignPattern/edit/Memento)
+
 ## 预告
 下节我们将学习观察者模式。

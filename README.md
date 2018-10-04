@@ -362,8 +362,9 @@ User's name is Amelia
 
 这里我们会继续给以前的 app 增加功能。我们将使用这个模式在”Seletct Question Group”页面展示用户最新的分数。并且可以保存分数，当我们杀掉 app 后再次进来还会显示分数。在这个例子中，我们将使用`Observable`来代替 KVO。实现效果如下：
 
-<img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-04%2021.23.38.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/50|imageslim" width="375px" />
+<img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-04%2021.23.38.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100|imageslim" width="375px" />
 
-
+图片点击可以查看。
+[Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Observer)
 ## 预告
 下节我们将学习 Builder Pattern。下节，我们将会使用 Builder Pattern 给 app 增加让用户自己创建问题组的功能。

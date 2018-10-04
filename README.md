@@ -364,7 +364,6 @@ User's name is Amelia
 
 <img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-04%2021.23.38.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100|imageslim" width="375px" />
 
-图片点击可以查看。
 [Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Observer)
 ## 预告
 下节我们将学习 Builder Pattern。下节，我们将会使用 Builder Pattern 给 app 增加让用户自己创建问题组的功能。

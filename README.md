@@ -8,4 +8,6 @@
 2. [Delegate](https://github.com/zhangdongpo/LearnDesignPattern/tree/Delegate)
 3. [Strategy](https://github.com/zhangdongpo/LearnDesignPattern/tree/Strategy)
 4. [Singleton](https://github.com/zhangdongpo/LearnDesignPattern/tree/Singleton)
+5. [Memento](https://github.com/zhangdongpo/LearnDesignPattern/tree/Memento)
+6. [Observer][https://github.com/zhangdongpo/LearnDesignPattern/tree/Observer]
                    

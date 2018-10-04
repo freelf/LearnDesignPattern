@@ -1,124 +1,367 @@
-## 备忘录模式
-备忘录模式允许一个对象可以被保存和恢复。包括三个部分。
-1. **Originator**: 需要被保存和恢复的对象。
-2. **Memento**: 代表保存的状态。
-3. ** Caretaker**: 从 originator 请求保存，并且接收一个 memento 作为响应。caretaker 负责保管这些 memento，并在稍后向 originator 提供这些 memento来恢复 originator 的状态。
-虽然不是严格要求，iOS通常使用`Encoder`来讲 originator 的状态保存到 memento，并且使用`Decoder`把 memento 恢复到 originator。这使编码和解码的逻辑可以通用。比如：`JSONEncoder`和`JSONDecoder`允许一个对象可以编码为 `JSON` 数据，也可以从`JSON`数据中解码。
+## 观察者模式
+观察者模式让一个对象观察另一个对象的改变。在本章节，你将学习两种实现观察者模式的方法：
+1. 使用 KVO
+2. 使用一个`Observable`包装。
+
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538272701.png)
+![](http://ohg2bgicd.bkt.clouddn.com/1538641129.png)
+这个模式包含两个主要对象：
+1. **Subject**是被观察对象。
+2. **Observer**是观察对象。
+
+不幸的是，Swift 4现在没有语言层面的 KVO 支持。我们需要继承`Foundation`的`NSObject`,`NSObject`使用`Objective-C`runtime来实现 KVO。如果你不想或者不能继承`NSObject`,你可以自己封装一个`Observable`类来代替。
+在本章，你将会使用 KVO 和`Observable`包装器来实现观察者模式。
 
 ## When should you use it?
 
-当我们想要保存并且以后需要恢复一个对象的状态时需要用到备忘录模式。
-比如：我们可以使用这个模式来实现一个游戏系统，originator 就是游戏的状态(比如：等级，健康状态，生命值等等)，memento 就是保存的数据，caretaker 就是游戏系统。
-我们可以持续保存一系列数据，表示一个以前的存档。我们也可以用这个模式在 IDEs或者图表软件中实现一些 undo/redo 的特性。
+当你想要在另一个对象改变时收到改变消息时需要使用观察者模式。
+这个模式经常在 MVC 中使用，view controller 是观察者，model 作为被观察者。这样 model 可以在改变时可以将改变传递回 view controller 而不需要知道 view controller 的类型。因此，不同的 view controller 可以观察共享 model 类型的变化。 
 
 ## Playground example
 
-**备忘录模式**是**表现模式**得一种。这是因为这个模式是和保存和恢复表现相关的模式。我们在这个例子中创建一个简单的游戏系统。
-首先我们需要定义一个 **originator**，用以下代码来创建：
+**观察者模式**是一种**表现类型模式**，这是因为**观察者模式**是关于一个对象观察另一个对象。
+下面我们先用 KVO 来实现观察者模式，先添加一个`KVOUser`类：
 ```swift
 import Foundation
-
-// MARK: - Originator
-public class Game: Codable {
-  
-  public class State: Codable {
-    public var attemptsRemaining: Int = 3
-    public var level: Int = 1
-    public var score: Int = 0
-  }
-  public var state = State()
-  
-  public func rackUpMassivePoints() {
-    state.score += 9002
-  }
-  
-  public func monstersEatPlayer() {
-    state.attemptsRemaining -= 1
-  }
-}
-```
-这里，你定义了一个`Game`类，它有一个内部`State`保存 game 属性，并且它有操作游戏内动作的方法。我们还要声明`Game`和`State`遵守`Codable`协议。
-什么是`Codable`? Apple 在 Swift 4中引进了`Codable`。任何类型都可以遵守`Codable`,用 Apple 的话来说就是：转换本身的外部代表。本质上，就是一个可以存储和恢复其自己的类型。听起来很类似？是的，这的确就是我们想让 originator 拥有的能力。
-因为`Game`和`State`的所有属性都遵守了`Codable`协议，编译器会自动生成`Codable`协议所必须实现的方法。`String`,`Int`,`Double`和大多数`Swift`提供的类型都遵守了`Codable`协议。
-`Codable`是一个`typealias`,结合了`Encodable`和`Decodable`协议：
-```swift
-typealias Codable = Decodable & Encodable
-```
-可编码类型可以通过`Encoder`编码为外部表示。外部表示的实际类型取决于你所使用的`Encoder`。`Foundation`提供了几种默认的编码器，比如`J SONEncoder`是为了把对象转化为 JSON 数据。
-可以通过`Decoder`把外部表现转化为可解码类型。`Foundation`也提供了解码器。比如`JSONDecoder`可以把 JSON 数据转化为对象。
-接下来我们需要一个**memento**，在上面的代码下面添加如下代码：
-```swift
-// MARK: - Memento
-typealias GameMemento = Data
-```
-理论上，我们一点也不需要这样声明。这里就是说明你`GameMemento`实际上是`Data`。这将是`Encoder`存储的数据，并且是`Decoder`恢复的元数据。
-接下来，我们需要添加一个**caretaker**,添加如下代码：
-```swift
-// MARK: - CareTaker
-public class GameSystem {
-  
-  private let decoder = JSONDecoder()
-  private let encoder = JSONEncoder()
-  private let userDefaults = UserDefaults.standard
-  
-  public func save(_ game: Game, title: String) throws {
-    let data = try encoder.encode(game)
-    userDefaults.set(data, forKey: title)
-  }
-  
-  public func load(title: String) throws -> Game {
-    guard let data = userDefaults.data(forKey: title),
-      let game = try? decoder.decode(Game.self, from: data)
-      else {
-        throw Error.gameNotFound
+// MARK: - KVO
+// 1
+@objcMembers public class KVOUser: NSObject {
+    // 2
+    dynamic var name: String
+    // 3
+    public init(name: String) {
+        self.name = name
     }
-    return game
-  }
-  
-  public enum Error: String, Swift.Error {
-    case gameNotFound
-  }
 }
 ```
-我们先来模拟一下游戏过程：
+这段代码做了一下三件事情：
+
+1. `KVOUser`是一个`NSObject`子类，我们将要观察`KVOUser`。`@objcMembers`的作用和往没个属性前面加`@objc`的作用一样。在 Swift 4中，`NSObject`子类的属性没有自动暴露给`Objective-C`runtime。因为`NSObject`使用runtime 来实现 KVO。所以必须添加`@objcMembers`来让 KVO 工作。
+2. `dynamic`的意思是这个属性使用`Objective-C`动态派发系统去调用`setter`和`getter`方法。这是为了让 KVO 工作，因为 KVO 交换了这个属性的 setter 方法来插入一些必要的逻辑。
+3. 一个简单的构造器，设置了 name 的值。
+
+接下来，添加以下代码：
 ```swift
-// MARK: - Example
-var game = Game()
-game.monstersEatPlayer()
-game.rackUpMassivePoints()
+// 1
+print("---KVO Example---")
+// 2
+let kvoUser = KVOUser(name: "Ray")
+// 3
+var kvoObserver: NSKeyValueObservation? = kvoUser.observe(\.name, options: [.initial, .new]) { (user, change) in
+    print("User's name is \(user.name)")
+}
 ```
-然后存储一下：
+这段代码做了一下三件事情：
+1. 在控制台打印”— KVO Example”
+2. 创建了一个 KVOUser 实例。
+3. 声明了一个`NSKeyValueObservation?`实例，命名为`kvoObserver`。这就是**观察者**对象。我们可以通过调用`kvoUser.observe`方法获得它。
+
+这个方法自动返回一个非可选`NSKeyValueObservation`类型.然而，我们明确声明这个类型为可选是为了在后面可以设置这个变量为`nil`。
+这个方法的第一个参数`keyPath`是观察的属性。我们可以通过使用`\.name`的简写形式来表达。根据上下文，Swift 会将其扩展为`\KVOUser.name`的完全 key path，来唯一标识`KVOUser`的 `name`。`options`是一个`NSKeyValueObservingOptions`的组合，这里我们具体说明我们想要收到`initial`和`new`的值。
+最后一个参数是一个闭包，提供了`user`和`change`对象。`user`是改变后的 user。如果`.new`动作触发了闭包，`change`可能包含一个`oldValue`。这里，我们打印了当前`user`的`name`。
+运行上面的代码可以看到在控制台打印了两行：
 ```swift
-// Save Game
-let gameSystem = GameSystem()
-try gameSystem.save(game, title: "Best Game Ever")
+---KVO Example---
+User's name is Ray
 ```
-然后读取一下记录：
+闭包在我们初始化 observer 时被调用了，因为我们指定了`.initial`。这意味着当初始化时发送观察结果。
+接下来我们添加下面的代码来触发`.new`KVO 动作：
 ```swift
-// Load Game
-game = try! gameSystem.load(title: "Best Game Ever")
-print("Loaded Game Score: \(game.state.score)")
+kvoUser.name = "zdp"
 ```
-Emmm,是不是很不错！
+我们可以看到下面的打印：
+```swift
+User's name is zdp
+```
+最后我们添加下面的代码：
+```swift
+kvoObserver = nil
+kvoUser.name = "Ray has left buliding"
+```
+这里我们设置`kvoObserver`为 `nil`,我们可以观察到在设置`kvoObserver`为`nil`后，控制台不再打印信息。
+Swift 4 KVO 的一个非常棒的特性就是我们不用明确 remove KVO 的 observer 或者闭包。代替的，observer 是一个 weak 引用，并且他们相关的闭包在 observer 变为 `nil` 时将自动移除。在Swift 以前版本和`Objective-C`中，你不得不明确调用`removeObserver(_:forKeyPath:)`,否则，在我们视图访问一个deallocated的 observer 时，app 将会 crash。
+Swift 4 KVO 自动移除 observers 非常棒，但是这并不能弥补 KVO 最大的缺点，因为我们在使用 KVO 时必须继承`NSObject`并且使用`Objective-C`的 runtime。
+如果你不想这样做，你可以创建一个自己的`Observable`包装来打破这种限制。
+接下来，我们创建一个自己的`Observable`。
+```swift
+// 1
+public class Observable<Type> {
+    
+    // MARK: - CallBack
+
+    // 2
+    fileprivate class Callback {
+        fileprivate weak var observer: AnyObject?
+        fileprivate let options: [ObservableOptions]
+        fileprivate let closure: (Type, ObservableOptions) -> Void
+        
+        fileprivate init(observer: AnyObject,
+                         options: [ObservableOptions],
+                         closure: @escaping (Type, ObservableOptions) -> Void) {
+            self.observer = observer
+            self.options = options
+            self.closure = closure
+        }
+    }
+}
+// MARK: - ObservableOptions
+
+// 3
+public struct ObservableOptions: OptionSet {
+    public static let initial = ObservableOptions(rawValue: 1 << 0)
+    public static let old = ObservableOptions(rawValue: 1 << 1)
+    public static let new = ObservableOptions(rawValue: 1 << 2)
+    
+    
+    public var rawValue: Int
+    
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+}
+```
+上面代码做了3件事：
+1. 声明了一个`Observable<Type>`的泛型类。
+2. 声明了一个内置的，`fileprivate`的类，叫做`Callback`。我们使用他来关联 `observer`,`options`和`closure`。注意，`observer`是一个 `weak`属性，所以需要是一个类。因此我们用`AnyObject`类型来表示它。最后，你将看到如何在 observer 变为 `nil`后去自动移除观察observer。
+3. 接下来，我们声明了一个`ObservableOptions`,它和 KVO 的`NSKeyValueObservingOptions`非常相似。因为 Swift 现在不允许内置 `OptionsSets`。所以，我们在`Observable<Type>`的外面声明它。
+
+接下来，我们继续给`Observable<Type>`添加代码：
+```swift
+// MARK: - Properties
+public var value: Type
+// MARK: - Object Lifecycle
+public init(_ value: Type) {
+	self.value = value
+}
+```
+我们声明了一个 value 属性和初始化方法。接下来，我们添加操作 observers 的方法：
+```swift
+    // MARK: - Managing Observers
+    
+    private var callbacks: [Callback] = []
+    
+    public func addObserver(
+        _ observer: AnyObject,
+        removeIfExists: Bool = true,
+        options: [ObservableOptions] = [.new],
+        closure: @escaping (Type, ObservableOptions) -> Void) {
+        if removeIfExists {
+            removeObserver(observer)
+        }
+        let callback = Callback(observer: observer,
+                                options: options,
+                                closure: closure)
+        callbacks.append(callback)
+        
+        if options.contains(.initial) {
+            closure(value, .initial)
+        }
+    }
+    
+    public func removeObserver(_ observer: AnyObject) {
+        callbacks = callbacks.filter {
+            $0.observer !== observer
+        }
+    }
+
+	private func removeNilObserverCallbacks() {
+        callbacks = callbacks.filter {
+            $0.observer != nil
+        }
+    }
+    private func notifyCallbacks(value: Type,
+                                 option: ObservableOptions) {
+        let callbacksToNotify = callbacks.filter {
+            $0.options.contains(option)
+        }
+        callbacksToNotify.forEach {
+            $0.closure(value, option)
+        }
+    }
+```
+我们需要在改变属性时通知 observer，所以我们需要在 `value`改变时去做一些事情：
+```swift
+    public var value: Type {
+        didSet {
+            removeNilObserverCallbacks()
+            notifyCallbacks(value: oldValue, option: .old)
+            notifyCallbacks(value: value, option: .new)
+        }
+    }
+
+```
+这里，我们在`value`的`didSet`方法中，添加了一些代码。到这里，我们的`Observable<Type>`已经封装完了，整体代码如下：
+```swift
+
+import Foundation
+// 1
+public class Observable<Type> {
+    
+    // MARK: - CallBack
+    fileprivate class Callback {
+        fileprivate weak var observer: AnyObject?
+        fileprivate let options: [ObservableOptions]
+        fileprivate let closure: (Type, ObservableOptions) -> Void
+        
+        fileprivate init(observer: AnyObject,
+                         options: [ObservableOptions],
+                         closure: @escaping (Type, ObservableOptions) -> Void) {
+            self.observer = observer
+            self.options = options
+            self.closure = closure
+        }
+    }
+    
+    // MARK: - Properties
+    public var value: Type {
+        didSet {
+            removeNilObserverCallbacks()
+            notifyCallbacks(value: oldValue, option: .old)
+            notifyCallbacks(value: value, option: .new)
+        }
+    }
+    
+    // MARK: - Object Lifecycle
+    public init(_ value: Type) {
+        self.value = value
+    }
+    
+    // MARK: - Managing Observers
+    
+    private var callbacks: [Callback] = []
+    
+    public func addObserver(
+        _ observer: AnyObject,
+        removeIfExists: Bool = true,
+        options: [ObservableOptions] = [.new],
+        closure: @escaping (Type, ObservableOptions) -> Void) {
+        if removeIfExists {
+            removeObserver(observer)
+        }
+        let callback = Callback(observer: observer,
+                                options: options,
+                                closure: closure)
+        callbacks.append(callback)
+        
+        if options.contains(.initial) {
+            closure(value, .initial)
+        }
+    }
+    
+    public func removeObserver(_ observer: AnyObject) {
+        callbacks = callbacks.filter {
+            $0.observer !== observer
+        }
+    }
+    
+    private func removeNilObserverCallbacks() {
+        callbacks = callbacks.filter {
+            $0.observer != nil
+        }
+    }
+    private func notifyCallbacks(value: Type,
+                                 option: ObservableOptions) {
+        let callbacksToNotify = callbacks.filter {
+            $0.options.contains(option)
+        }
+        callbacksToNotify.forEach {
+            $0.closure(value, option)
+        }
+    }
+}
+
+// MARK: - ObservableOptions
+
+// 3
+public struct ObservableOptions: OptionSet {
+    public static let initial = ObservableOptions(rawValue: 1 << 0)
+    public static let old = ObservableOptions(rawValue: 1 << 1)
+    public static let new = ObservableOptions(rawValue: 1 << 2)
+    
+    
+    public var rawValue: Int
+    
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
+}
+
+```
+接下来，我们测试一下：
+```swift
+//MARK: - Observable Example
+
+public class User {
+    public let name: Observable<String>
+    public init(name: String) {
+        self.name = Observable(name)
+    }
+}
+public class Observer { }
+print("")
+print("--- Observable Example ---")
+```
+`User`是一个**Subject**,它有一个`name`属性，我们将观察这个属性。`Observer`是一个观察者** observer**，这可以是一个`NSObject`实例或者任意的类。
+到这里，控制台只打印了以下内容：
+```swift
+
+--- Observable Example ---
+```
+我们接下来添加以下代码测试：
+```swift
+let user = User(name: "Madeline")
+
+var observer: Observer? = Observer()
+
+user.name.addObserver(observer!,
+                      options: [.initial, .new]) {
+                        name , change in
+                        print("User's name is \(name)")
+    
+}
+```
+运行到这里，可以看到控制台打印内容如下：
+```swift
+
+--- Observable Example ---
+User's name is Madeline
+```
+接下来，添加以下代码：
+```swift
+user.name.value = "Amelia"
+```
+控制台打印如下：
+```swift
+
+--- Observable Example ---
+User's name is Madeline
+User's name is Amelia
+```
+接下来测试吧 observer 置为`nil`,看下会不会自动移除。
+```swift
+observer = nil
+
+user.name.value = "Amelia is outta here!"
+```
+控制台内容如下：
+```swift
+
+--- Observable Example ---
+User's name is Madeline
+User's name is Amelia
+```
+通过内容，我们可以看到，我们把 observer 置为 `nil`后，再改变 value，我们将观察不到任何信息。
 
 ## What should you be careful about?
 
-当添加和移除`Codable`属性时需要当心，编码和解码都是可以抛出错误的。如果我们使用`try!`强制解包，并且丢失了必要的数据，app 会 crash。
-为了规避这种问题，除非你确定操作可以成功，应该尽量避免使用`try!`。当改变模型时也需要提前规划。比如：我们可以给模型添加版本号或者使用带版本号的数据库。然而我们需要考虑入魂儿处理版本升级。我们可以选择当我们有一个新的版本时删掉旧的数据，或者创建一个升级路径把旧的数据转化为新的数据，或者使用这两种方法的结合。
+对简单的 models 或者一些从来不会改变的属性使用观察者模式是一种过分的行为，这可能会导致一些不必要的工作。
+在我们实施观察者模式之前，我们需要确定我们希望改变什么以及在什么条件下改变。如果我们不能确定对象或者属性发生改变的原因，我们最好不要立马实施 KVO/Observable。
+作为一个特殊标识，如果一个属性从来不会改变，就不要去把它做为一个 observable 的属性。
 
 ## Tutorial project
 
-下面我们继续给我们以前的 app 增加功能。我们将使用备忘录模式添加一个 app 重要的特性：保存`QuestionGroup`分数的能力。
-实现效果：
-![](http://ohg2bgicd.bkt.clouddn.com/2018-10-03%2010.57.41.gif)
-再次运行会在控制台打印：
-```swift
-Hiragana: correctCount 5, incorrectCount 6
-Katakana: correctCount 5, incorrectCount 5
-Basic Phrases: correctCount 0, incorrectCount 0
-Numbers: correctCount 0, incorrectCount 0
-```
+这里我们会继续给以前的 app 增加功能。我们将使用这个模式在”Seletct Question Group”页面展示用户最新的分数。并且可以保存分数，当我们杀掉 app 后再次进来还会显示分数。在这个例子中，我们将使用`Observable`来代替 KVO。实现效果如下：
+![](http://ohg2bgicd.bkt.clouddn.com/2018-10-04%2021.23.38.gif)
+
 ## 预告
-下节我们将学习观察者模式。
+下节我们将学习 Builder Pattern。下节，我们将会使用 Builder Pattern 给 app 增加让用户自己创建问题组的功能。

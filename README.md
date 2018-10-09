@@ -159,7 +159,9 @@ Sorry, no kitten burgers here... :[
 ## Tutorial project 
 
 这里我们继续为以前的 app 增加功能，这节我们将使用构造器模式来添加创建新的`QuestionGroup`功能。实现效果如下：
-![示例项目](http://ohg2bgicd.bkt.clouddn.com/Builder.gif)
+
+<img src="http://ohg2bgicd.bkt.clouddn.com/Builder.gif" width="375px" />
+
 [Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Builder)
 ## 预告
 下节我们讲学习 MVVM 设计模式，将会开启一个新的工程。这个工程就到此为止了。

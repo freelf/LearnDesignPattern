@@ -1,6 +1,6 @@
 ## 构造器模式
 构造器模式允许一步一步的创建一个复杂的对象而不是一次创建完成。这个模式包括三个主要类型，UML 图如下：
-![构造器模式](http://ohg2bgicd.bkt.clouddn.com/1538746972.png)
+![构造器模式](https://nightwish.oss-cn-beijing.aliyuncs.com/1538746972.png)
 1. **Director**接收输入并且和 builder 协调。**Director**通常是一个 view controller或者是view controller 使用的帮助类。
 2. **Product**是被创建的复杂对象，可以是一个class 或者 struct，取决于是否想要引用语义。通常是一个 model。
 3. **Builder**接收一步步输入并且控制 product 的创建。经常是一个 class，可以通过引用被复用。
@@ -160,7 +160,7 @@ Sorry, no kitten burgers here... :[
 
 这里我们继续为以前的 app 增加功能，这节我们将使用构造器模式来添加创建新的`QuestionGroup`功能。实现效果如下：
 
-<img src="http://ohg2bgicd.bkt.clouddn.com/Builder.gif" width="375px" />
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/Builder.gif" width="375px" />
 
 [Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Builder)
 ## 预告

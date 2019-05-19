@@ -1,6 +1,6 @@
 ## 介绍委托模式
 委托模式使一个对象能够使用另一个对象来提供数据或者执行一些任务，这个模式有三个部分，UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/15344108237603.jpg)
+![](https://nightwish.oss-cn-beijing.aliyuncs.com/15344108237603.jpg)
 <!-- more -->
 * 一个**对象需要委托**：也就是委托对象。通常这个对象有一个`weak` 属性 `delegate`，防止循环引用。
 * 一个**委托协议**：这个协议定义了委托应该实现或者可能实现的方法。
@@ -90,6 +90,6 @@ delegate?.menuViewController(self, didSelectItemAtIndex: indexPath.row)
 ## 教程项目
 上一篇 MVC 之后，我们已经实现了可以一些功能，比如，点击屏幕可以显示答案，点击正确和错误按钮可以记录正确和错误的个数。
 接下来我们需要实现让用户可以选择问题组的一个列表，并且在 `QuestionViewControlle` 中添加了取消按钮、显示当前问题下标和回答完问题再点击正确或者错误按钮返回的操作。这些操作使用委托模式实现。具体效果如下图：
-![-c140](http://ohg2bgicd.bkt.clouddn.com/delegate.gif)
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/delegate.gif" width="375px" />
 ## 预告
 下一章我们会学习策略模式，并且继续完善 RabbleWabble。

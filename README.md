@@ -5,7 +5,7 @@
 3. ** Caretaker**: 从 originator 请求保存，并且接收一个 memento 作为响应。caretaker 负责保管这些 memento，并在稍后向 originator 提供这些 memento来恢复 originator 的状态。
 虽然不是严格要求，iOS通常使用`Encoder`来讲 originator 的状态保存到 memento，并且使用`Decoder`把 memento 恢复到 originator。这使编码和解码的逻辑可以通用。比如：`JSONEncoder`和`JSONDecoder`允许一个对象可以编码为 `JSON` 数据，也可以从`JSON`数据中解码。
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538272701.png)
+![](https://nightwish.oss-cn-beijing.aliyuncs.com/1538272701.png)
 
 ## When should you use it?
 
@@ -113,7 +113,7 @@ Emmm,是不是很不错！
 下面我们继续给我们以前的 app 增加功能。我们将使用备忘录模式添加一个 app 重要的特性：保存`QuestionGroup`分数的能力。
 实现效果：
 
-<img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-03%2010.57.41.gif" width="375px" />
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/2018-10-03%2010.57.41.gif" width="375px" />
 
 再次运行会在控制台打印：
 ```swift

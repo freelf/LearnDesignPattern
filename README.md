@@ -1,7 +1,7 @@
 ## 单例模式
 单例模式限制一个类仅仅有一个实例。每个这个类的引用都指向同一个实例。在 iOS 开发中非常常见这种模式，因为 Apple 广泛使用单例模式。
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538101105.png)
+![](https://nightwish.oss-cn-beijing.aliyuncs.com/1538101105.png)
 “singleton plus”模式也很常用，这个模式提供了一个共享单例，但是也允许其他实例被创建。
 
 ## When should you use it?
@@ -82,7 +82,7 @@ let singletonPlus2 = SingletonPlus()
 首先我们需要有一个地方去存储 app 的设置。你需要创建一个单例来实现这个。
 实现效果如下：
 
-<img src="http://ohg2bgicd.bkt.clouddn.com/2018-09-28%2012.06.40.gif" width="375px" />
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/2018-09-28%2012.06.40.gif" width="375px" />
 
 [Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Singleton)
 

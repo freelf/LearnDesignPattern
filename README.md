@@ -1,7 +1,7 @@
 ## 介绍 MVC
 MVC 设计模式把对象分为三个不同的类型： Models，Views和 Controllers。
 UML 图表示如下：
-![](http://ohg2bgicd.bkt.clouddn.com/15341242390937.jpg)
+![](https://nightwish.oss-cn-beijing.aliyuncs.com/15341242390937.jpg)
 MVC 是在 iOS 编程中是非常常见的，因为 Apple 在 UIKit 中大量选用了这种设计模式。
 * **Models**保持应用数据，通常为 structs 或者简单的 classes。
 * **Views**在屏幕上显示看的见的元素和 controls，通常为`UIView`的子类。
@@ -97,5 +97,5 @@ MVC 是一个好的开始，但是它有局限性。不是每一个对象都能�
 为了解决这个问题，需要在需要时引入其他的设计模式。
 ## 教程项目
 通过这一整章，我们会做一个应用叫做：Rabble Wabble(就是一个类似背单词的 app)。这一小篇的效果如下：
-![MVC](http://ohg2bgicd.bkt.clouddn.com/MVC.gif)
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/MVC.gif" width="375px" />
 功能类似一个背单词的 app，点击空白处显示答案，点正确，正确数加1，点错误错误数加1。很简单吧，利用这个功能，我们可以了解下 MVC 各个模块通信方式。通过下面的学习，我们将逐步完善这个应用。

@@ -4,7 +4,7 @@
 2. 使用一个`Observable`包装。
 
 UML 图如下：
-![](http://ohg2bgicd.bkt.clouddn.com/1538641129.png)
+![](https://nightwish.oss-cn-beijing.aliyuncs.com/1538641129.png)
 这个模式包含两个主要对象：
 1. **Subject**是被观察对象。
 2. **Observer**是观察对象。
@@ -362,7 +362,7 @@ User's name is Amelia
 
 这里我们会继续给以前的 app 增加功能。我们将使用这个模式在”Seletct Question Group”页面展示用户最新的分数。并且可以保存分数，当我们杀掉 app 后再次进来还会显示分数。在这个例子中，我们将使用`Observable`来代替 KVO。实现效果如下：
 
-<img src="http://ohg2bgicd.bkt.clouddn.com/2018-10-04%2021.23.38.gif?imageMogr2/auto-orient/thumbnail/375x/blur/1x0/quality/100|imageslim" width="375px" />
+<img src="https://nightwish.oss-cn-beijing.aliyuncs.com/2018100422338.gif" width="375px" />
 
 [Demo](https://github.com/zhangdongpo/LearnDesignPattern/tree/Observer)
 ## 预告
